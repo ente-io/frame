@@ -24,7 +24,7 @@ class FileRepository {
 
   Future<List<File>> _cachedFuture;
 
-  Future<List<File>> loadFiles() async {
+  Future<List<File>> loadFiles() {
     if (_cachedFuture == null) {
       _cachedFuture = _loadFiles().then((value) {
         _hasLoadedFiles = true;
@@ -41,25 +41,31 @@ class FileRepository {
   }
 
   Future<List<File>> _loadFiles() async {
-    final files = await FilesDB.instance.getFiles();
-    final deduplicatedFiles = List<File>();
-    for (int index = 0; index < files.length; index++) {
-      if (index != 0) {
-        bool isSameUploadedFile = files[index].uploadedFileID != null &&
-            (files[index].uploadedFileID == files[index - 1].uploadedFileID);
-        bool isSameLocalFile = files[index].localID != null &&
-            (files[index].localID == files[index - 1].localID);
-        if (isSameUploadedFile || isSameLocalFile) {
-          continue;
-        }
-      }
-      deduplicatedFiles.add(files[index]);
-    }
-    if (!listEquals(_files, deduplicatedFiles)) {
-      _files.clear();
-      _files.addAll(deduplicatedFiles);
-      Bus.instance.fire(LocalPhotosUpdatedEvent());
-    }
-    return _files;
+    _logger.info("Loading");
+    // final files = await FilesDB.instance.getFiles();
+    // final deduplicatedFiles = List<File>();
+    // for (int index = 0; index < files.length; index++) {
+    //   if (index != 0) {
+    //     bool isSameUploadedFile = files[index].uploadedFileID != null &&
+    //         (files[index].uploadedFileID == files[index - 1].uploadedFileID);
+    //     bool isSameLocalFile = files[index].localID != null &&
+    //         (files[index].localID == files[index - 1].localID);
+    //     if (isSameUploadedFile || isSameLocalFile) {
+    //       continue;
+    //     }
+    //   }
+    //   deduplicatedFiles.add(files[index]);
+    // }
+    // if (!listEquals(_files, deduplicatedFiles)) {
+    //   _logger.info("OG contained " +
+    //       _files.length.toString() +
+    //       " files, new contains " +
+    //       deduplicatedFiles.length.toString() +
+    //       " files");
+    //   _files.clear();
+    //   _files.addAll(deduplicatedFiles);
+    Bus.instance.fire(LocalPhotosUpdatedEvent());
+
+    return List<File>();
   }
 }

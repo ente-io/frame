@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:photos/core/configuration.dart';
 import 'package:photos/core/event_bus.dart';
+import 'package:photos/db/files_db.dart';
 import 'package:photos/events/local_photos_updated_event.dart';
 import 'package:photos/events/tab_changed_event.dart';
 import 'package:photos/models/filters/important_items_filter.dart';
@@ -46,7 +47,7 @@ class _HomeWidgetState extends State<HomeWidget> {
   final _settingsButton = SettingsButton();
   static const _headerWidget = HeaderWidget();
   final PageController _pageController = PageController();
-  final _future = FileRepository.instance.loadFiles();
+  // final _future = FileRepository.instance.loadFiles();
   int _selectedTabIndex = 0;
 
   StreamSubscription<LocalPhotosUpdatedEvent> _photosUpdatedEvent;
@@ -152,38 +153,30 @@ class _HomeWidgetState extends State<HomeWidget> {
   }
 
   Widget _getMainGalleryWidget() {
-    return FutureBuilder(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          var header;
-          if (_selectedFiles.files.isEmpty &&
-              Configuration.instance.hasConfiguredAccount()) {
-            header = Container(
-              margin: EdgeInsets.only(top: 12),
-              child: Stack(
-                children: [_settingsButton, _headerWidget],
-              ),
-            );
-          } else {
-            header = _headerWidget;
-          }
-          return Gallery(
-            syncLoader: () {
-              return _getFilteredPhotos(FileRepository.instance.files);
-            },
-            reloadEvent: Bus.instance.on<LocalPhotosUpdatedEvent>(),
-            tagPrefix: "home_gallery",
-            selectedFiles: _selectedFiles,
-            headerWidget: header,
-            isHomePageGallery: true,
-          );
-        } else if (snapshot.hasError) {
-          return Center(child: Text(snapshot.error.toString()));
-        } else {
-          return loadWidget;
-        }
+    var header;
+    if (_selectedFiles.files.isEmpty &&
+        Configuration.instance.hasConfiguredAccount()) {
+      header = Container(
+        margin: EdgeInsets.only(top: 12),
+        child: Stack(
+          children: [_settingsButton, _headerWidget],
+        ),
+      );
+    } else {
+      header = _headerWidget;
+    }
+    return Gallery(
+      allCreationTimesFuture: FilesDB.instance.getAllCreationTimes(),
+      asyncLoader: (creationStartTime, creationEndTime, {limit}) {
+        return FilesDB.instance
+            .getFiles(creationStartTime, creationEndTime, limit: limit);
       },
+      shouldLoadAll: false,
+      reloadEvent: Bus.instance.on<LocalPhotosUpdatedEvent>(),
+      tagPrefix: "home_gallery",
+      selectedFiles: _selectedFiles,
+      headerWidget: header,
+      isHomePageGallery: true,
     );
   }
 

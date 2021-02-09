@@ -34,9 +34,14 @@ class _CollectionPageState extends State<CollectionPage> {
         collection: widget.collection,
       ),
       body: Gallery(
-        asyncLoader: (_, __) =>
-            FilesDB.instance.getAllInCollection(widget.collection.id),
-        shouldLoadAll: true,
+        allCreationTimesFuture: FilesDB.instance
+            .getAllCreationTimesInCollection(widget.collection.id),
+        asyncLoader: (creationStartTime, creationEndTime, {limit}) {
+          return FilesDB.instance.getFilesInCollection(
+              widget.collection.id, creationStartTime, creationEndTime,
+              limit: limit);
+        },
+        shouldLoadAll: false,
         reloadEvent: Bus.instance
             .on<CollectionUpdatedEvent>()
             .where((event) => event.collectionID == widget.collection.id),
