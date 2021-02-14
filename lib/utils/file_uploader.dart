@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:io' as io;
+import 'dart:math';
 import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_sodium/flutter_sodium.dart';
@@ -25,7 +26,8 @@ class FileUploader {
   final _logger = Logger("FileUploader");
   final _dio = Network.instance.getDio();
   final _queue = LinkedHashMap<int, FileUploadItem>();
-  final _maximumConcurrentUploads = 4;
+  final kMaximumConcurrentUploads = 4;
+  final kMaximumThumbnailCompressionAttempts = 2;
   int _currentlyUploading = 0;
   final _uploadURLs = Queue<UploadURL>();
 
@@ -128,7 +130,7 @@ class FileUploader {
     if (SyncService.instance.shouldStopSync()) {
       clearQueue();
     }
-    if (_queue.length > 0 && _currentlyUploading < _maximumConcurrentUploads) {
+    if (_queue.length > 0 && _currentlyUploading < kMaximumConcurrentUploads) {
       final firstPendingEntry = _queue.entries
           .firstWhere((entry) => entry.value.status == UploadStatus.not_started,
               orElse: () => null)
@@ -205,12 +207,14 @@ class FileUploader {
         await FilesDB.instance.deleteLocalFile(file.localID);
         throw InvalidFileError();
       }
-      final thumbnailSize = thumbnailData.length;
-      if (thumbnailSize > THUMBNAIL_DATA_LIMIT) {
+      int compressionAttempts = 0;
+      while (thumbnailData.length > THUMBNAIL_DATA_LIMIT &&
+          compressionAttempts < kMaximumThumbnailCompressionAttempts) {
+        _logger.info("Thumbnail size " + thumbnailData.length.toString());
         thumbnailData = await compressThumbnail(thumbnailData);
-        _logger.info("Thumbnail size " + thumbnailSize.toString());
         _logger.info(
             "Compressed thumbnail size " + thumbnailData.length.toString());
+        compressionAttempts++;
       }
 
       final encryptedThumbnailData =
@@ -415,7 +419,7 @@ class FileUploader {
         final response = await _dio.get(
           Configuration.instance.getHttpEndpoint() + "/files/upload-urls",
           queryParameters: {
-            "count": 42, // m4gic number
+            "count": min(42, 2 * _queue.length), // m4gic number
           },
           options: Options(
               headers: {"X-Auth-Token": Configuration.instance.getToken()}),
@@ -436,21 +440,43 @@ class FileUploader {
     return _uploadURLFetchInProgress;
   }
 
-  Future<String> _putFile(UploadURL uploadURL, io.File file) async {
-    final fileSize = file.lengthSync().toString();
+  Future<String> _putFile(
+    UploadURL uploadURL,
+    io.File file, {
+    int contentLength,
+    int attempt = 1,
+  }) async {
+    final fileSize = contentLength ?? file.lengthSync();
     final startTime = DateTime.now().millisecondsSinceEpoch;
-    _logger.info("Putting file of size " + fileSize + " to " + uploadURL.url);
-    await _dio.put(uploadURL.url,
+    _logger.info(
+        "Putting file of size " + fileSize.toString() + " to " + uploadURL.url);
+    try {
+      await _dio.put(
+        uploadURL.url,
         data: file.openRead(),
-        options: Options(headers: {
-          Headers.contentLengthHeader: await file.length(),
-        }));
-    _logger.info("Upload speed : " +
-        (file.lengthSync() /
-                (DateTime.now().millisecondsSinceEpoch - startTime))
-            .toString() +
-        " kilo bytes per second");
-    return uploadURL.objectKey;
+        options: Options(
+          headers: {
+            Headers.contentLengthHeader: fileSize,
+          },
+        ),
+      );
+      _logger.info("Upload speed : " +
+          (file.lengthSync() /
+                  (DateTime.now().millisecondsSinceEpoch - startTime))
+              .toString() +
+          " kilo bytes per second");
+
+      return uploadURL.objectKey;
+    } on DioError catch (e) {
+      if (e.message.startsWith(
+              "HttpException: Content size exceeds specified contentLength.") &&
+          attempt == 1) {
+        return _putFile(uploadURL, file,
+            contentLength: file.readAsBytesSync().length, attempt: 2);
+      } else {
+        throw e;
+      }
+    }
   }
 }
 
