@@ -33,24 +33,24 @@ class _PasswordEntryPageState extends State<PasswordEntryPage> {
   Widget _getBody() {
     return Column(
       children: [
-        FlutterPasswordStrength(
-          password: _passwordController1.text,
-          backgroundColor: Colors.grey[850],
-          strengthCallback: (strength) {
-            _passwordStrength = strength;
-          },
-        ),
+        // FlutterPasswordStrength(
+        //   password: _passwordController1.text,
+        //   backgroundColor: Colors.grey[850],
+        //   strengthCallback: (strength) {
+        //     _passwordStrength = strength;
+        //   },
+        // ),
         Expanded(
           child: SingleChildScrollView(
             child: Container(
               padding: EdgeInsets.fromLTRB(16, 36, 16, 16),
               child: Column(
                 children: [
-                  // Image.asset(
-                  //   "assets/vault.png",
-                  //   width: 196,
-                  //   height: 196,
-                  // ),
+                  Image.asset(
+                    "assets/hero.png",
+                    width: 196,
+                    height: 196,
+                  ),
                   Padding(padding: EdgeInsets.all(12)),
                   Text(
                     "enter a password we can use to encrypt your data",
@@ -60,19 +60,19 @@ class _PasswordEntryPageState extends State<PasswordEntryPage> {
                     ),
                   ),
                   Padding(padding: EdgeInsets.all(8)),
-                  Text("we don't store this password, so if you forget, "),
-                  Text.rich(
-                    TextSpan(
-                        text: "we cannot decrypt your data",
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          fontWeight: FontWeight.bold,
-                        )),
-                    style: TextStyle(
-                      height: 1.3,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  // Text("we don't store this password, so if you forget, "),
+                  // Text.rich(
+                  //   TextSpan(
+                  //       text: "we cannot decrypt your data",
+                  //       style: TextStyle(
+                  //         decoration: TextDecoration.underline,
+                  //         fontWeight: FontWeight.bold,
+                  //       )),
+                  //   style: TextStyle(
+                  //     height: 1.3,
+                  //   ),
+                  //   textAlign: TextAlign.center,
+                  // ),
                   Padding(padding: EdgeInsets.all(12)),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
@@ -131,7 +131,7 @@ class _PasswordEntryPageState extends State<PasswordEntryPage> {
                                   _showPasswordConfirmationDialog();
                                 }
                               }
-                            : null,
+                            : () {},
                       )),
                 ],
               ),

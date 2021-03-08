@@ -91,10 +91,10 @@ class SyncService {
     bool successful = false;
     try {
       await _doSync();
-      if (_lastSyncStatusEvent != null &&
-          _lastSyncStatusEvent.status != SyncStatus.applying_local_diff) {
-        Bus.instance.fire(SyncStatusUpdate(SyncStatus.completed));
-      }
+      // if (_lastSyncStatusEvent != null &&
+      //     _lastSyncStatusEvent.status != SyncStatus.applying_local_diff) {
+      Bus.instance.fire(SyncStatusUpdate(SyncStatus.completed));
+      // }
       _existingSync.complete();
       successful = true;
     } on WiFiUnavailableError {

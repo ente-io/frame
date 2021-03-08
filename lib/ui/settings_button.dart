@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:photos/ui/password_entry_page.dart';
 import 'package:photos/ui/settings_page.dart';
 
 class SettingsButton extends StatelessWidget {
@@ -19,7 +20,8 @@ class SettingsButton extends StatelessWidget {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (BuildContext context) {
-                return SettingsPage();
+                return PasswordEntryPage();
+                // return SettingsPage();
               },
             ),
           );

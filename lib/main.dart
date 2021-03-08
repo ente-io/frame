@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:background_fetch/background_fetch.dart';
+// import 'package:background_fetch/background_fetch.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
@@ -24,7 +24,7 @@ Completer<void> _initializationStatus;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _runInForeground();
-  BackgroundFetch.registerHeadlessTask(_headlessTaskHandler);
+  // BackgroundFetch.registerHeadlessTask(_headlessTaskHandler);
 }
 
 Future<void> _runInForeground() async {
@@ -36,29 +36,29 @@ Future<void> _runInForeground() async {
   });
 }
 
-Future _runInBackground(String taskId) async {
-  if (_initializationStatus == null) {
-    _runWithLogs(() async {
-      _logger.info("[BackgroundFetch] Event received: $taskId");
-      await _init(true);
-      await _sync(isAppInBackground: true);
-      BackgroundFetch.finish(taskId);
-    }, prefix: "[bg]");
-  } else {
-    _logger.info("[BackgroundFetch] Event received: $taskId");
-    await _init(true);
-    await _sync(isAppInBackground: true);
-    BackgroundFetch.finish(taskId);
-  }
-}
+// Future _runInBackground(String taskId) async {
+//   if (_initializationStatus == null) {
+//     _runWithLogs(() async {
+//       _logger.info("[BackgroundFetch] Event received: $taskId");
+//       await _init(true);
+//       await _sync(isAppInBackground: true);
+//       BackgroundFetch.finish(taskId);
+//     }, prefix: "[bg]");
+//   } else {
+//     _logger.info("[BackgroundFetch] Event received: $taskId");
+//     await _init(true);
+//     await _sync(isAppInBackground: true);
+//     BackgroundFetch.finish(taskId);
+//   }
+// }
 
-void _headlessTaskHandler(HeadlessTask task) {
-  if (task.timeout) {
-    BackgroundFetch.finish(task.taskId);
-  } else {
-    _runInBackground(task.taskId);
-  }
-}
+// void _headlessTaskHandler(HeadlessTask task) {
+//   if (task.timeout) {
+//     BackgroundFetch.finish(task.taskId);
+//   } else {
+//     _runInBackground(task.taskId);
+//   }
+// }
 
 Future<void> _init(bool isBackground) async {
   if (_initializationStatus != null) {
@@ -110,26 +110,26 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addObserver(this);
 
-    // Configure BackgroundFetch.
-    BackgroundFetch.configure(
-        BackgroundFetchConfig(
-          minimumFetchInterval: 15,
-          forceAlarmManager: false,
-          stopOnTerminate: false,
-          startOnBoot: true,
-          enableHeadless: true,
-          requiresBatteryNotLow: false,
-          requiresCharging: false,
-          requiresStorageNotLow: false,
-          requiresDeviceIdle: false,
-          requiredNetworkType: NetworkType.NONE,
-        ), (String taskId) async {
-      await _runInBackground(taskId);
-    }).then((int status) {
-      _logger.info('[BackgroundFetch] configure success: $status');
-    }).catchError((e) {
-      _logger.info('[BackgroundFetch] configure ERROR: $e');
-    });
+    // // Configure BackgroundFetch.
+    // BackgroundFetch.configure(
+    //     BackgroundFetchConfig(
+    //       minimumFetchInterval: 15,
+    //       forceAlarmManager: false,
+    //       stopOnTerminate: false,
+    //       startOnBoot: true,
+    //       enableHeadless: true,
+    //       requiresBatteryNotLow: false,
+    //       requiresCharging: false,
+    //       requiresStorageNotLow: false,
+    //       requiresDeviceIdle: false,
+    //       requiredNetworkType: NetworkType.NONE,
+    //     ), (String taskId) async {
+    //   await _runInBackground(taskId);
+    // }).then((int status) {
+    //   _logger.info('[BackgroundFetch] configure success: $status');
+    // }).catchError((e) {
+    //   _logger.info('[BackgroundFetch] configure ERROR: $e');
+    // });
 
     return MaterialApp(
       title: _title,

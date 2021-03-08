@@ -96,7 +96,7 @@ class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
           children: [
             Padding(padding: EdgeInsets.all(6)),
             SectionTitle("incoming"),
-            Padding(padding: EdgeInsets.all(16)),
+            Padding(padding: EdgeInsets.all(40)),
             collections.incoming.length > 0
                 ? GridView.builder(
                     shrinkWrap: true,
@@ -111,11 +111,11 @@ class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
                     ),
                   )
                 : nothingToSeeHere,
-            Padding(padding: EdgeInsets.all(16)),
+            // Padding(padding: EdgeInsets.all(16)),
             Divider(height: 0),
-            Padding(padding: EdgeInsets.all(14)),
+            Padding(padding: EdgeInsets.all(8)),
             SectionTitle("outgoing"),
-            Padding(padding: EdgeInsets.all(16)),
+            Padding(padding: EdgeInsets.all(12)),
             collections.outgoing.length > 0
                 ? Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),

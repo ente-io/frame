@@ -288,7 +288,7 @@ class SectionTitle extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).buttonColor.withOpacity(0.8),
-                fontSize: 20,
+                fontSize: 40,
                 letterSpacing: 1,
               ),
             ),

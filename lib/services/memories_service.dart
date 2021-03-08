@@ -32,46 +32,61 @@ class MemoriesService extends ChangeNotifier {
   }
 
   Future<List<Memory>> getMemories() async {
-    if (_cachedMemories != null) {
-      return _cachedMemories;
-    }
-    final filter = ImportantItemsFilter();
-    final files = List<File>();
-    final presentTime = DateTime.now();
-    final present = presentTime.subtract(Duration(
-        hours: presentTime.hour,
-        minutes: presentTime.minute,
-        seconds: presentTime.second));
-    for (var yearAgo = 1; yearAgo <= yearsBefore; yearAgo++) {
-      final date = _getDate(present, yearAgo);
-      final startCreationTime =
-          date.subtract(Duration(days: daysBefore)).microsecondsSinceEpoch;
-      final endCreationTime =
-          date.add(Duration(days: daysAfter)).microsecondsSinceEpoch;
-      final filesInYear = await _filesDB.getFilesCreatedWithinDuration(
-          startCreationTime, endCreationTime);
-      if (filesInYear.length > 0)
-        _logger.info("Got " +
-            filesInYear.length.toString() +
-            " memories between " +
-            getFormattedTime(
-                DateTime.fromMicrosecondsSinceEpoch(startCreationTime)) +
-            " to " +
-            getFormattedTime(
-                DateTime.fromMicrosecondsSinceEpoch(endCreationTime)));
-      files.addAll(filesInYear);
-    }
-    final seenTimes = await _memoriesDB.getSeenTimes();
+    // if (_cachedMemories != null) {
+    //   return _cachedMemories;
+    // }
     final memories = List<Memory>();
-    for (final file in files) {
-      if (filter.shouldInclude(file)) {
-        final seenTime = seenTimes[file.generatedID] ?? -1;
-        memories.add(Memory(file, seenTime));
-      }
-    }
-    _logger.info("Number of memories: " + memories.length.toString());
-    _cachedMemories = memories;
-    return _cachedMemories;
+    final babyBorn = await _filesDB.getFile(12);
+    babyBorn.creationTime = DateTime.fromMicrosecondsSinceEpoch(
+            DateTime.now().microsecondsSinceEpoch -
+                Duration(days: 365).inMicroseconds)
+        .microsecondsSinceEpoch;
+    memories.add(Memory(babyBorn, -1));
+
+    final doggie = await _filesDB.getUploadedFile(38723, 95);
+    doggie.creationTime = DateTime.fromMicrosecondsSinceEpoch(
+            DateTime.now().microsecondsSinceEpoch -
+                Duration(days: 730).inMicroseconds)
+        .microsecondsSinceEpoch;
+    memories.add(Memory(doggie, -1));
+    return memories;
+    // final filter = ImportantItemsFilter();
+    // final files = List<File>();
+    // final presentTime = DateTime.now();
+    // final present = presentTime.subtract(Duration(
+    //     hours: presentTime.hour,
+    //     minutes: presentTime.minute,
+    //     seconds: presentTime.second));
+    // for (var yearAgo = 1; yearAgo <= yearsBefore; yearAgo++) {
+    //   final date = _getDate(present, yearAgo);
+    //   final startCreationTime =
+    //       date.subtract(Duration(days: daysBefore)).microsecondsSinceEpoch;
+    //   final endCreationTime =
+    //       date.add(Duration(days: daysAfter)).microsecondsSinceEpoch;
+    //   final filesInYear = await _filesDB.getFilesCreatedWithinDuration(
+    //       startCreationTime, endCreationTime);
+    //   if (filesInYear.length > 0)
+    //     _logger.info("Got " +
+    //         filesInYear.length.toString() +
+    //         " memories between " +
+    //         getFormattedTime(
+    //             DateTime.fromMicrosecondsSinceEpoch(startCreationTime)) +
+    //         " to " +
+    //         getFormattedTime(
+    //             DateTime.fromMicrosecondsSinceEpoch(endCreationTime)));
+    //   files.addAll(filesInYear);
+    // }
+    // final seenTimes = await _memoriesDB.getSeenTimes();
+    // final memories = List<Memory>();
+    // for (final file in files) {
+    //   if (filter.shouldInclude(file)) {
+    //     final seenTime = seenTimes[file.generatedID] ?? -1;
+    //     memories.add(Memory(file, seenTime));
+    //   }
+    // }
+    // _logger.info("Number of memories: " + memories.length.toString());
+    // _cachedMemories = memories;
+    // return _cachedMemories;
   }
 
   DateTime _getDate(DateTime present, int yearAgo) {
