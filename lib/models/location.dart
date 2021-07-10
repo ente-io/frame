@@ -16,7 +16,6 @@ class Location {
 
   factory Location.fromMap(Map<String, dynamic> map) {
     if (map == null) return null;
-    return Location(
-        double.parse(map['latitude']), double.parse(map['latitude']));
+    return Location(map['latitude'], map['latitude']);
   }
 }
