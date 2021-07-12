@@ -4,52 +4,36 @@ import 'package:flutter/foundation.dart';
 import 'package:photos/models/location.dart';
 
 class LocationTag {
-  String id;
-  int ownerID;
-  String encryptedKey;
-  String keyDecryptionNonce;
-  bool isDeleted = false;
-  int createdAt;
-  int updatedAt;
+  final String id;
+  final int ownerID;
+  final String encryptedKey;
+  final String keyDecryptionNonce;
+  final bool isDeleted;
+  final int createdAt;
+  final int updatedAt;
 
-  String userTag;
-  String providerTag;
-  CoordinatesType coordinateType; // point, box, polygon etc
-  List<Location> coordinates;
-  double radius; // in meter
+  // null in case of deleted tags
+  LocationClientAttr clientAttr;
 
-  LocationTag();
+  LocationTag(this.id, this.ownerID, this.encryptedKey, this.keyDecryptionNonce,
+      this.isDeleted, this.createdAt, this.updatedAt);
 
-  Map<String, dynamic> getPrivateAttributes() {
-    if (isDeleted != null && isDeleted) {
-      throw Exception("invalid state");
-    }
-    final result = Map<String, dynamic>();
-    result["userTag"] = userTag ?? '';
-    result["providerTag"] = providerTag ?? '';
-    result["coordinateType"] = describeEnum(coordinateType);
-    result["radius"] = radius ?? 0.0;
-    result["coordinates"] =
-        jsonEncode(coordinates.map((i) => i.toJson()).toList());
-    return result;
+  factory LocationTag.fromMap(Map<String, dynamic> map) {
+    if (map == null) return null;
+    var tag = new LocationTag(
+      map["id"] as String,
+      map["ownerId"] as int,
+      map["encryptedKey"] as String,
+      map["keyDecryptionNonce"] as String,
+      map["isDeleted"] ?? false,
+      map["createdAt"] as int,
+      map["updatedAt"] as int,
+    );
+    return tag;
   }
 
-  void applyPrivateAttributes(Map<String, dynamic> attr) {
-    if (isDeleted != null && isDeleted) {
-      throw Exception("invalid state");
-    }
-
-    userTag = attr["userTag"] ?? '';
-    providerTag = attr["providerTag"] ?? '';
-    coordinateType = getCoordinatesType(attr["coordinateType"]);
-    radius = attr["radius"] ?? 0.0;
-    coordinates = [];
-    if (attr["coordinates"] != null) {
-      coordinates = (json.decode(attr["coordinates"]) as List)
-          .map((locationMap) => Location.fromMap(locationMap))
-          .toList(growable: false);
-    }
-  }
+  factory LocationTag.fromJson(String source) =>
+      LocationTag.fromMap(json.decode(source));
 }
 
 enum CoordinatesType {
@@ -63,8 +47,34 @@ CoordinatesType getCoordinatesType(String type) {
       orElse: () => CoordinatesType.POINT);
 }
 
-class LocationAttributes {
-  int version;
-  String encryptedData;
-  String decryptionNonce;
+class LocationClientAttr {
+  final String userTag;
+  final String providerTag;
+  final CoordinatesType coordinateType; // point, box, polygon etc
+  final List<Location> coordinates;
+  final double radius; // in meter
+
+  LocationClientAttr(this.userTag, this.providerTag, this.coordinateType,
+      this.coordinates, this.radius);
+
+  Map<String, dynamic> toJson() {
+    return {
+      "userTag": this.userTag,
+      "providerTag": this.providerTag,
+      "coordinateType": describeEnum(this.coordinateType),
+      "coordinates": jsonEncode(coordinates.map((i) => i.toJson()).toList()),
+      "radius": this.radius,
+    };
+  }
+
+  factory LocationClientAttr.fromJson(Map<String, dynamic> jsonData) {
+    return LocationClientAttr(
+        jsonData['userTag'] ?? '',
+        jsonData["providerTag"] ?? '',
+        getCoordinatesType(jsonData["coordinateType"]),
+        (json.decode(jsonData["coordinates"]) as List)
+            .map((locationMap) => Location.fromMap(locationMap))
+            .toList(growable: false),
+        jsonData["radius"] ?? 0.0);
+  }
 }

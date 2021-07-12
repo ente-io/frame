@@ -39,6 +39,7 @@ class LocationTagsDB {
   static final columnRadius = 'radius';
 
   LocationTagsDB._privateConstructor();
+
   static final LocationTagsDB instance = LocationTagsDB._privateConstructor();
 
   static Database _database;
@@ -46,7 +47,6 @@ class LocationTagsDB {
   Future<Database> get database async {
     if (_database != null) return _database;
     _database = await _initDatabase();
-    insert(new LocationTag());
     return _database;
   }
 
@@ -71,9 +71,9 @@ class LocationTagsDB {
                   $columnCreatedAt INTEGER,
                   $columnProvider TEXT DEFAULT 'USER',
                   $columnIsDeleted INTEGER NOT NULL DEFAULT 0,
-                  $columnUserTag TEXT NOT NULL,
-                  $columnProviderTag TEXT NOT NULL DEFAULT '',
-                  $columnCoordinateType TEXT NOT NULL,
+                  $columnUserTag TEXT,
+                  $columnProviderTag TEXT,
+                  $columnCoordinateType TEXT,
                   $columnCoordinates TEXT,
                   $columnRadius REAL DEFAULT 0.0
                 )
@@ -107,13 +107,13 @@ class LocationTagsDB {
     } else {
       row[columnIsDeleted] = 0;
     }
-    row[columnIsDeleted] = tag.isDeleted;
-    row[columnUserTag] = tag.userTag;
-    row[columnProviderTag] = tag.providerTag;
-    row[columnRadius] = tag.radius;
-    row[columnCoordinateType] = describeEnum(tag.coordinateType);
-    row[columnCoordinates] = jsonEncode(tag.coordinates);
-
+    row[columnUserTag] = tag.clientAttr?.userTag ?? '';
+    row[columnProviderTag] = tag.clientAttr?.providerTag ?? '';
+    row[columnRadius] = tag.clientAttr?.radius ?? 0.0;
+    row[columnCoordinateType] =
+        describeEnum(tag.clientAttr?.coordinateType ?? CoordinatesType.POINT);
+    row[columnCoordinates] = jsonEncode(
+        tag.clientAttr?.coordinates?.map((i) => i.toJson())?.toList());
     return row;
   }
 }
