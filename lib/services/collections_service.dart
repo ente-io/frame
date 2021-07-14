@@ -16,6 +16,9 @@ import 'package:photos/events/local_photos_updated_event.dart';
 import 'package:photos/models/collection.dart';
 import 'package:photos/models/collection_file_item.dart';
 import 'package:photos/models/file.dart';
+import 'package:photos/models/location.dart';
+import 'package:photos/models/location_tag.dart';
+import 'package:photos/services/location_tag_service.dart';
 import 'package:photos/services/remote_sync_service.dart';
 import 'package:photos/utils/crypto_util.dart';
 import 'package:photos/utils/file_util.dart';
@@ -97,7 +100,15 @@ class CollectionsService {
       _logger.info("Collections updated");
       Bus.instance.fire(CollectionUpdatedEvent(null, List<File>.empty()));
     }
+    LocationTagService.instance.addTag(getDummyClientAttributes());
     return collections;
+  }
+
+  static LocationClientAttr getDummyClientAttributes() {
+    List<Location> l = [new Location(12.9585, 77.7057)];
+    var tag = new LocationClientAttr(
+        "Purva Fountain", "provider tag", CoordinatesType.POINT, l, 1000.0);
+    return tag;
   }
 
   Future<void> clearCache() {

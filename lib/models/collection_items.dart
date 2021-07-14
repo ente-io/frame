@@ -25,3 +25,10 @@ class SharedCollections {
 
   SharedCollections(this.outgoing, this.incoming);
 }
+
+class TagsCollections {
+  final List<CollectionWithThumbnail> outgoing;
+  final List<CollectionWithThumbnail> incoming;
+
+  TagsCollections(this.outgoing, this.incoming);
+}

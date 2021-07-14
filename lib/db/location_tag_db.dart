@@ -87,12 +87,15 @@ class LocationTagsDB {
 
   Future<int> insert(LocationTag tag) async {
     final db = await instance.database;
-    return db.insert(
-      table,
-      _getRowForLocationTag(tag),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    return 1;
+    // return db.insert(
+    //   table,
+    //   _getRowForLocationTag(tag),
+    //   conflictAlgorithm: ConflictAlgorithm.replace,
+    // );
   }
+
+  public
 
   Map<String, dynamic> _getRowForLocationTag(LocationTag tag) {
     final Map<String, dynamic> row = new Map<String, dynamic>();

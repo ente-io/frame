@@ -20,17 +20,17 @@ import 'package:photos/utils/navigation_util.dart';
 import 'package:photos/utils/share_util.dart';
 import 'package:photos/utils/toast_util.dart';
 
-class SharedCollectionGallery extends StatefulWidget {
-  const SharedCollectionGallery({Key key}) : super(key: key);
+class TagsCollectionGallery extends StatefulWidget {
+  const TagsCollectionGallery({Key key}) : super(key: key);
 
   @override
-  _SharedCollectionGalleryState createState() =>
-      _SharedCollectionGalleryState();
+  _TagsCollectionGalleryState createState() =>
+      _TagsCollectionGalleryState();
 }
 
-class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
+class _TagsCollectionGalleryState extends State<TagsCollectionGallery>
     with AutomaticKeepAliveClientMixin {
-  Logger _logger = Logger("SharedCollectionGallery");
+  Logger _logger = Logger("TagsCollectionGallery");
   StreamSubscription<LocalPhotosUpdatedEvent> _localFilesSubscription;
   StreamSubscription<CollectionUpdatedEvent> _collectionUpdatesSubscription;
   StreamSubscription<UserLoggedOutEvent> _loggedOutEvent;
@@ -55,7 +55,7 @@ class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return FutureBuilder<SharedCollections>(
+    return FutureBuilder<TagsCollections>(
       future:
           Future.value(CollectionsService.instance.getLatestCollectionFiles())
               .then((files) async {
@@ -90,11 +90,11 @@ class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
           return second.collection.updationTime
               .compareTo(first.collection.updationTime);
         });
-        return SharedCollections(outgoing, incoming);
+        return TagsCollections(outgoing, incoming);
       }),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return _getSharedCollectionsGallery(snapshot.data);
+          return _getTagsCollectionsGallery(snapshot.data);
         } else if (snapshot.hasError) {
           _logger.shout(snapshot.error);
           return Center(child: Text(snapshot.error.toString()));
@@ -105,14 +105,14 @@ class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
     );
   }
 
-  Widget _getSharedCollectionsGallery(SharedCollections collections) {
+  Widget _getTagsCollectionsGallery(TagsCollections collections) {
     return SingleChildScrollView(
       child: Container(
         margin: const EdgeInsets.only(bottom: 50),
         child: Column(
           children: [
             Padding(padding: EdgeInsets.all(6)),
-            SectionTitle("incoming"),
+            SectionTitle("location"),
             Padding(padding: EdgeInsets.all(16)),
             collections.incoming.length > 0
                 ? GridView.builder(
@@ -131,7 +131,7 @@ class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
             Padding(padding: EdgeInsets.all(16)),
             Divider(height: 0),
             Padding(padding: EdgeInsets.all(14)),
-            SectionTitle("outgoing"),
+            SectionTitle("tags"),
             Padding(padding: EdgeInsets.all(16)),
             collections.outgoing.length > 0
                 ? Padding(
@@ -160,7 +160,7 @@ class _SharedCollectionGalleryState extends State<SharedCollectionGallery>
       child: Column(
         children: [
           Text(
-            "no one is sharing with you",
+            "looks like you haven't tagged any location",
             style: TextStyle(color: Colors.white.withOpacity(0.6)),
           ),
           Container(
@@ -373,10 +373,10 @@ class IncomingCollectionItem extends StatelessWidget {
               child: Stack(
                 children: [
                   Hero(
-                      tag: "tagged_collection" + c.thumbnail.tag(),
+                      tag: "shared_collection" + c.thumbnail.tag(),
                       child: ThumbnailWidget(
                         c.thumbnail,
-                        key: Key("tagged_collection" + c.thumbnail.tag()),
+                        key: Key("shared_collection" + c.thumbnail.tag()),
                       )),
                   Align(
                     alignment: Alignment.bottomRight,
@@ -418,7 +418,7 @@ class IncomingCollectionItem extends StatelessWidget {
         ],
       ),
       onTap: () {
-        routeToPage(context, CollectionPage(c, tagPrefix: "tagged_collection"));
+        routeToPage(context, CollectionPage(c, tagPrefix: "shared_collection"));
       },
     );
   }
